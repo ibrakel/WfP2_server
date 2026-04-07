@@ -6,10 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Unit-level testing for {@link UeberholServerApplication} object.
- */
-@SpringBootTest
+@SpringBootTest(classes = UeberholServerApplication.class)
 class UeberholServerApplicationTest {
     @Test
     void testLoadContext() {

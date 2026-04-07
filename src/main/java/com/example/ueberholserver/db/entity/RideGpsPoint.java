@@ -3,12 +3,13 @@ package com.example.ueberholserver.db.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+/** One GPS fix from the phone, recorded at ~sampleRateHz. Always present for each sample. */
 @Entity
 @Table(
-        name = "ride_event",
-        indexes = {@Index(name = "idx_event_ride_t", columnList = "ride_id,tMs")}
+        name = "ride_gps_point",
+        indexes = {@Index(name = "idx_gps_ride_t", columnList = "ride_id, t_ms")}
 )
-public class RideEventEntity {
+public class RideGpsPoint {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,16 +20,16 @@ public class RideEventEntity {
     @JoinColumn(name = "ride_id")
     private RideEntity ride;
 
+    @Column(name = "t_ms", nullable = false)
     private Long tMs;
-    private String type;
 
-    private Double lat;
+    private Double lat;        // null inside a privacy zone or no fix
     private Double lon;
+    private Double speedMps;
+    private Double accuracyM;
 
-    private Double leftM;
-    private Double rightM;
+    // ── Getters / Setters ──────────────────────────────────────────────────
 
-    // Getters/setters
     public Long getId() { return id; }
 
     public RideEntity getRide() { return ride; }
@@ -37,18 +38,15 @@ public class RideEventEntity {
     public Long getTMs() { return tMs; }
     public void setTMs(Long tMs) { this.tMs = tMs; }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
     public Double getLat() { return lat; }
     public void setLat(Double lat) { this.lat = lat; }
 
     public Double getLon() { return lon; }
     public void setLon(Double lon) { this.lon = lon; }
 
-    public Double getLeftM() { return leftM; }
-    public void setLeftM(Double leftM) { this.leftM = leftM; }
+    public Double getSpeedMps() { return speedMps; }
+    public void setSpeedMps(Double speedMps) { this.speedMps = speedMps; }
 
-    public Double getRightM() { return rightM; }
-    public void setRightM(Double rightM) { this.rightM = rightM; }
+    public Double getAccuracyM() { return accuracyM; }
+    public void setAccuracyM(Double accuracyM) { this.accuracyM = accuracyM; }
 }

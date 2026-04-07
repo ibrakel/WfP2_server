@@ -26,15 +26,22 @@ public class RideEntity {
     /** OBS firmware track UUID from CHAR_TRACK_ID; null if not transmitted by device. */
     private String bleTrackId;
 
-    /** Handlebar offset from CHAR_OFFSET, in cm. */
     @Column(nullable = false, columnDefinition = "int default 0")
     private int offsetLeftCm;
 
     @Column(nullable = false, columnDefinition = "int default 0")
     private int offsetRightCm;
 
+    /** One row per GPS fix — always populated, even when OBS is not connected. */
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RideSampleEntity> samples = new ArrayList<>();
+    private List<RideGpsPoint> gpsPoints = new ArrayList<>();
+
+    /**
+     * One row per OBS BLE packet — only populated when the sensor was connected.
+     * An empty list is valid; it means the ride was recorded GPS-only.
+     */
+    @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RideObsReading> obsReadings = new ArrayList<>();
 
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RideEventEntity> events = new ArrayList<>();
@@ -74,8 +81,11 @@ public class RideEntity {
     public int getOffsetRightCm() { return offsetRightCm; }
     public void setOffsetRightCm(int offsetRightCm) { this.offsetRightCm = offsetRightCm; }
 
-    public List<RideSampleEntity> getSamples() { return samples; }
-    public void setSamples(List<RideSampleEntity> samples) { this.samples = samples; }
+    public List<RideGpsPoint> getGpsPoints() { return gpsPoints; }
+    public void setGpsPoints(List<RideGpsPoint> gpsPoints) { this.gpsPoints = gpsPoints; }
+
+    public List<RideObsReading> getObsReadings() { return obsReadings; }
+    public void setObsReadings(List<RideObsReading> obsReadings) { this.obsReadings = obsReadings; }
 
     public List<RideEventEntity> getEvents() { return events; }
     public void setEvents(List<RideEventEntity> events) { this.events = events; }

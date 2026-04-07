@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   datasource:
@@ -16,3 +16,6 @@ spring:
     console:
       enabled: true
       path: /h2
+
+app:
+  api-key: ${API_KEY:dev-key}

@@ -1,7 +1,6 @@
 package com.example.ueberholserver.db.entity;
 
 import jakarta.persistence.*;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +19,19 @@ public class RideEntity {
     private String deviceName;
     private String firmware;
 
-    private Instant uploadedAt;
+    /** New column; old "uploaded_at" (Instant) column remains in DB but is unmapped. */
+    @Column(name = "uploaded_at_ms")
+    private Long uploadedAtMs;
+
+    /** OBS firmware track UUID from CHAR_TRACK_ID; null if not transmitted by device. */
+    private String bleTrackId;
+
+    /** Handlebar offset from CHAR_OFFSET, in cm. */
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private int offsetLeftCm;
+
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private int offsetRightCm;
 
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RideSampleEntity> samples = new ArrayList<>();
@@ -28,7 +39,8 @@ public class RideEntity {
     @OneToMany(mappedBy = "ride", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RideEventEntity> events = new ArrayList<>();
 
-    // Getters/setters
+    // ── Getters / Setters ──────────────────────────────────────────────────
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -50,8 +62,17 @@ public class RideEntity {
     public String getFirmware() { return firmware; }
     public void setFirmware(String firmware) { this.firmware = firmware; }
 
-    public Instant getUploadedAt() { return uploadedAt; }
-    public void setUploadedAt(Instant uploadedAt) { this.uploadedAt = uploadedAt; }
+    public Long getUploadedAtMs() { return uploadedAtMs; }
+    public void setUploadedAtMs(Long uploadedAtMs) { this.uploadedAtMs = uploadedAtMs; }
+
+    public String getBleTrackId() { return bleTrackId; }
+    public void setBleTrackId(String bleTrackId) { this.bleTrackId = bleTrackId; }
+
+    public int getOffsetLeftCm() { return offsetLeftCm; }
+    public void setOffsetLeftCm(int offsetLeftCm) { this.offsetLeftCm = offsetLeftCm; }
+
+    public int getOffsetRightCm() { return offsetRightCm; }
+    public void setOffsetRightCm(int offsetRightCm) { this.offsetRightCm = offsetRightCm; }
 
     public List<RideSampleEntity> getSamples() { return samples; }
     public void setSamples(List<RideSampleEntity> samples) { this.samples = samples; }

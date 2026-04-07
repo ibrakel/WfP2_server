@@ -14,13 +14,15 @@ public class RideUploadRequest {
     @NotNull public Long endedAtMs;
 
     @NotNull public List<RideSampleDto> samples;
-    @NotNull public List<RideEventDto> events;
+    public List<RideEventDto> events;
 
     public static class RideSampleDto {
         public Long tMs;
+        public Long sensorMillis;       // device uptime ms; nullable
         public Double lat, lon, accuracyM, speedMps;
         public Double leftM, rightM;
         public Integer batteryPct;
+        public int flags;               // default 0
     }
 
     public static class RideEventDto {

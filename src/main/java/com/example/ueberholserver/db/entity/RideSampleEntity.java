@@ -19,6 +19,9 @@ public class RideSampleEntity {
 
     private Long tMs;
 
+    /** Device uptime in ms from OBS BLE packet; null if not provided. */
+    private Long sensorMillis;
+
     private Double lat;
     private Double lon;
     private Double accuracyM;
@@ -29,7 +32,11 @@ public class RideSampleEntity {
 
     private Integer batteryPct;
 
-    // Getters/setters
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private int flags;
+
+    // ── Getters / Setters ──────────────────────────────────────────────────
+
     public Long getId() { return id; }
 
     public RideEntity getRide() { return ride; }
@@ -37,6 +44,9 @@ public class RideSampleEntity {
 
     public Long getTMs() { return tMs; }
     public void setTMs(Long tMs) { this.tMs = tMs; }
+
+    public Long getSensorMillis() { return sensorMillis; }
+    public void setSensorMillis(Long sensorMillis) { this.sensorMillis = sensorMillis; }
 
     public Double getLat() { return lat; }
     public void setLat(Double lat) { this.lat = lat; }
@@ -58,4 +68,7 @@ public class RideSampleEntity {
 
     public Integer getBatteryPct() { return batteryPct; }
     public void setBatteryPct(Integer batteryPct) { this.batteryPct = batteryPct; }
+
+    public int getFlags() { return flags; }
+    public void setFlags(int flags) { this.flags = flags; }
 }

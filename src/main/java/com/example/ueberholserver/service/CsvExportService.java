@@ -2,8 +2,7 @@ package com.example.ueberholserver.service;
 
 import com.example.ueberholserver.db.entity.RideEntity;
 import com.example.ueberholserver.db.entity.RideEventEntity;
-import com.example.ueberholserver.db.entity.RideGpsPoint;
-import com.example.ueberholserver.db.entity.RideObsReading;
+import com.example.ueberholserver.db.entity.RideSampleEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -11,7 +10,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,13 +30,9 @@ public class CsvExportService {
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH.mm.ss").withZone(ZoneOffset.UTC);
 
     public String buildCsv(RideEntity ride) {
-        List<RideGpsPoint> gpsPoints = ride.getGpsPoints().stream()
-                .sorted(Comparator.comparingLong(RideGpsPoint::getTMs))
+        List<RideSampleEntity> samples = ride.getSamples().stream()
+                .sorted(Comparator.comparingLong(RideSampleEntity::getTMs))
                 .collect(Collectors.toList());
-
-        // O(1) lookup: tMs → OBS reading (exact match; same packet = same timestamp)
-        Map<Long, RideObsReading> obsByTms = ride.getObsReadings().stream()
-                .collect(Collectors.toMap(RideObsReading::getTMs, r -> r, (a, b) -> a));
 
         List<RideEventEntity> events = ride.getEvents();
         Set<Long> closePassTimes = events.stream()
@@ -61,31 +55,29 @@ public class CsvExportService {
         // ── Line 2: header ───────────────────────────────────────────────────
         sb.append(HEADER).append(CRLF);
 
-        // ── Lines 3..N: one row per GPS fix ──────────────────────────────────
-        for (RideGpsPoint gps : gpsPoints) {
-            RideObsReading obs = obsByTms.get(gps.getTMs()); // null = no sensor data this tick
-
-            Instant instant = Instant.ofEpochMilli(gps.getTMs());
+        // ── Lines 3..N: one row per sample ───────────────────────────────────
+        for (RideSampleEntity s : samples) {
+            Instant instant = Instant.ofEpochMilli(s.getTMs());
             String date  = DATE_FMT.format(instant);
             String time  = TIME_FMT.format(instant);
-            long millis  = (obs != null && obs.getSensorMillis() != null)
-                    ? obs.getSensorMillis()
-                    : gps.getTMs() - ride.getStartedAtMs();
+            long millis  = s.getSensorMillis() != null
+                    ? s.getSensorMillis()
+                    : s.getTMs() - ride.getStartedAtMs();
 
-            String lat   = gps.getLat()      != null ? String.valueOf(gps.getLat())   : "";
-            String lon   = gps.getLon()      != null ? String.valueOf(gps.getLon())   : "";
-            String speed = gps.getSpeedMps() != null
-                    ? String.format("%.2f", gps.getSpeedMps() * 3.6) : "";
+            String lat   = s.getLat()      != null ? String.valueOf(s.getLat())   : "";
+            String lon   = s.getLon()      != null ? String.valueOf(s.getLon())   : "";
+            String speed = s.getSpeedMps() != null
+                    ? String.format("%.2f", s.getSpeedMps() * 3.6) : "";
 
-            Integer leftCm  = obs != null ? toCm(obs.getLeftM())  : null;
-            Integer rightCm = obs != null ? toCm(obs.getRightM()) : null;
+            Integer leftCm  = toCm(s.getLeftM());
+            Integer rightCm = toCm(s.getRightM());
             String  left    = leftCm  != null ? String.valueOf(leftCm)  : "";
             String  right   = rightCm != null ? String.valueOf(rightCm) : "";
 
             boolean confirmed = events.stream()
-                    .anyMatch(e -> Math.abs(e.getTMs() - gps.getTMs()) <= 500L);
-            boolean marked  = closePassTimes.contains(gps.getTMs());
-            boolean invalid = leftCm == null && rightCm == null;
+                    .anyMatch(e -> Math.abs(e.getTMs() - s.getTMs()) <= 500L);
+            boolean marked  = closePassTimes.contains(s.getTMs());
+            boolean invalid = s.getLeftM() == null && s.getRightM() == null;
 
             String lus1 = leftCm  != null ? String.valueOf(leftCm  * 58) : "";
             String rus1 = rightCm != null ? String.valueOf(rightCm * 58) : "";

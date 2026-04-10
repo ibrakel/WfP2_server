@@ -3,8 +3,7 @@ package com.example.ueberholserver.service;
 import com.example.ueberholserver.api.dto.RideUploadRequest;
 import com.example.ueberholserver.db.entity.RideEntity;
 import com.example.ueberholserver.db.entity.RideEventEntity;
-import com.example.ueberholserver.db.entity.RideGpsPoint;
-import com.example.ueberholserver.db.entity.RideObsReading;
+import com.example.ueberholserver.db.entity.RideSampleEntity;
 import com.example.ueberholserver.db.repo.RideRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,32 +44,21 @@ public class RideService {
         ride.setEndedAtMs(req.endedAtMs);
         ride.setUploadedAtMs(System.currentTimeMillis());
 
-        // ── Split each incoming sample into GPS point + optional OBS reading ──
+        // ── Samples ──────────────────────────────────────────────────────────
         for (var s : req.samples) {
-            // GPS point — always written
-            RideGpsPoint gps = new RideGpsPoint();
-            gps.setRide(ride);
-            gps.setTMs(s.tMs);
-            gps.setLat(s.lat);
-            gps.setLon(s.lon);
-            gps.setSpeedMps(s.speedMps);
-            gps.setAccuracyM(s.accuracyM);
-            ride.getGpsPoints().add(gps);
-
-            // OBS reading — only when the sensor contributed data
-            boolean hasSensorData = s.leftM != null || s.rightM != null
-                    || s.batteryPct != null || s.sensorMillis != null;
-            if (hasSensorData) {
-                RideObsReading obs = new RideObsReading();
-                obs.setRide(ride);
-                obs.setTMs(s.tMs);
-                obs.setSensorMillis(s.sensorMillis);
-                obs.setLeftM(s.leftM);
-                obs.setRightM(s.rightM);
-                obs.setBatteryPct(s.batteryPct);
-                obs.setFlags(s.flags);
-                ride.getObsReadings().add(obs);
-            }
+            RideSampleEntity se = new RideSampleEntity();
+            se.setRide(ride);
+            se.setTMs(s.tMs);
+            se.setSensorMillis(s.sensorMillis);
+            se.setLat(s.lat);
+            se.setLon(s.lon);
+            se.setAccuracyM(s.accuracyM);
+            se.setSpeedMps(s.speedMps);
+            se.setLeftM(s.leftM);
+            se.setRightM(s.rightM);
+            se.setBatteryPct(s.batteryPct);
+            se.setFlags(s.flags);
+            ride.getSamples().add(se);
         }
 
         // ── Events ───────────────────────────────────────────────────────────

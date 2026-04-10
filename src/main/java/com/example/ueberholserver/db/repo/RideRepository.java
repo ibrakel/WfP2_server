@@ -13,7 +13,7 @@ public interface RideRepository extends JpaRepository<RideEntity, String> {
             "SELECT new com.example.ueberholserver.api.dto.RideSummaryDto(" +
             "  r.id, r.clientRideId, r.deviceName," +
             "  r.startedAtMs, r.endedAtMs, r.uploadedAtMs," +
-            "  r.bleTrackId, SIZE(r.gpsPoints), SIZE(r.obsReadings), SIZE(r.events)" +
+            "  r.bleTrackId, SIZE(r.samples), SIZE(r.events)" +
             ") FROM RideEntity r",
            countQuery = "SELECT COUNT(r) FROM RideEntity r")
     Page<RideSummaryDto> findAllSummaries(Pageable pageable);
